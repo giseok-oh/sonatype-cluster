@@ -1,0 +1,79 @@
+---
+
+- hosts: all
+  become: true
+  tasks:
+    - name: Upgrade all packages
+      ansible.builtin.dnf:
+        name: "*"
+        state: latest
+
+    - name: Install prerequisites
+      ansible.builtin.dnf:
+        name:
+          - lxml
+          - python-lxml
+          - python-firewall
+          - python3-libvirt
+          - epel-release
+    
+    - name: Install libvirt
+      ansible.builtin.dnf:
+        name:
+          - bridge-utils 
+          - virt-top 
+          - libguestfs-tools 
+          - virt-viewer 
+          - qemu-kvm 
+          - libvirt 
+          - virt-install
+
+    - name: Libvirt user setup
+      ansible.builtin.command:
+        cmd: usermod -aG libvirt vagrant
+
+    - name: Activate libvirt group
+      ansible.builtin.command:
+        cmd: newgrp libvirt
+    
+    - name: Enable and start the libvirtd service
+      ansible.builtin.command:
+        cmd: systemctl enable --now libvirtd
+
+    - name: Copy Kubernetes repo file
+      ansible.builtin.copy:
+        src: ../files/kubernetes.repo
+        dest: /etc/yum.repos.d/kubernetes.repo
+        owner: root
+        group: root
+        mode: "0644"
+    
+    - name: Install Kubernetes packages
+      ansible.builtin.dnf:
+        name:
+          - kubectl
+
+- hosts: zone_a
+  roles:
+    - role: "../roles/zones"
+  var_files:
+    - ../vars/zone_a/libvirt_vms.yml
+    - ../vars/zone_a/firewall_rules.yml
+
+- hosts: zone_b
+  roles:
+    - role: "../roles/zones"
+  var_files:
+    - ../vars/zone_b/libvirt_vms.yml
+    - ../vars/zone_b/firewall_rules.yml
+
+- hosts: zone_c
+  roles:
+    - role: "../roles/zones"
+  var_files:
+    - ../vars/zone_c/libvirt_vms.yml
+    - ../vars/zone_c/firewall_rules.yml
+
+- hosts: cicd_cluster
+  roles:
+    - role: "../roles/cicd_cluster"

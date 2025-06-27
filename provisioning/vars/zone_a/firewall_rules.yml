@@ -1,0 +1,42 @@
+---
+
+firewall_rules:
+  - direction: ingress
+    action: allow
+    port: 80
+    protocol: tcp
+  
+  - direction: ingress
+    action: allow
+    port: 443
+    protocol: tcp
+
+  - direction: ingress
+    action: deny
+    port: all
+    protocol: all
+
+  - direction: egress
+    action: allow
+    port: 53
+    protocol: tcp
+
+  - direction: egress
+    action: allow
+    port: 123
+    protocol: tcp
+
+  - direction: egress
+    action: allow
+    port: 443
+    protocol: tcp
+
+  - direction: egress
+    action: allow
+    port: 53
+    protocol: udp
+
+  - direction: egress
+    action: deny
+    port: all
+    protocol: all

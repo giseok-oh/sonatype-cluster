@@ -1,0 +1,15 @@
+---
+
+- name: Define VMs
+  community.libvirt.virt:
+    command: define
+    xml: "{{ lookup('template', 'vm.xml.j2', vm=item) }}"
+  loop: "{{ libvirt_vms }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Start VMs
+  community.libvirt.virt:
+    name: "{{ item.name }}"
+    state: running
+  loop: "{{ libvirt_vms }}"

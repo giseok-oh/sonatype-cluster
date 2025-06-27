@@ -1,0 +1,9 @@
+---
+
+##### Image #####
+base_image_url: "https://download.rockylinux.org/pub/rocky/9/images/x86_64/Rocky-9-GenericCloud-Base-9.6-20250531.0.x86_64.qcow2"
+base_image_name: "RockyLinux-9.6.x86_64.qcow2"
+base_image_format: qcow2
+
+##### Libvirt #####
+libvirt_vms_volume_path: "/var/lib/libvirt/images"

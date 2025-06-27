@@ -1,0 +1,20 @@
+---
+
+- name: Create volumes
+  when: item.volumes is defined
+  loop: "{{ libvirt_vms }}"
+  loop_control:
+    label: "{{ item.name }}"
+  block:
+    - name: Create volume
+      loop: "{{ item.volumes }}"
+      loop_control:
+        label: "{{ item.name }}"
+      command: >
+        virsh vol-create-as {{ item.pool }} {{ item.name }} {{ item.capacity }} 
+        --format {{ item.format }}
+        --backing-vol /tmp/{{ base_image_name }}
+        --backing-vol-format {{ base_image_format }}
+      args:
+        chdir: "{{ libvirt_vms_volume_path }}"
+        warn: false
