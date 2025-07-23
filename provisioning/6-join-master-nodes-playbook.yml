@@ -1,0 +1,21 @@
+---
+
+- name: Join Master Nodes to Kubernetes Cluster
+  hosts: masters:!primary_masters
+  become: true
+  tasks:
+    - name: Wait for join command script to appear
+      ansible.builtin.wait_for:
+        path: /tmp/join_command.sh
+        state: present
+        timeout: 120
+
+    - name: Check /tmp/join_command.sh exists
+      ansible.builtin.stat:
+        path: /tmp/join_command.sh
+      register: join_command_script
+
+    - name: Join the node to the cluster
+      ansible.builtin.command:
+        cmd: "bash /tmp/join_command.sh"
+      when: join_command_script.stat.exists

@@ -1,0 +1,71 @@
+---
+
+- name: Install containerd
+  hosts: nodes
+  become: true
+  tasks:
+    - name: Install prerequisites
+      ansible.builtin.apt:
+        name:
+          - software-properties-common
+          - apt-transport-https
+          - ca-certificates
+          - lsb-release
+          - gnupg2
+          - curl
+
+    - name: Check /etc/apt/keyrings exists
+      ansible.builtin.stat:
+        path: /etc/apt/keyrings
+      register: keyrings_dir
+
+    - name: Create directory for apt keyrings if it doesn't exist
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0755"
+      when: not keyrings_dir.stat.exists
+
+    - name: Download GPG Key
+      ansible.builtin.get_url:
+        url: "{{ DOCKER_KEY_URL }}"
+        dest: "{{ DOCKER_KEY_PATH }}"
+        mode: "0755"
+
+    - name: Get architecture
+      ansible.builtin.command:
+        cmd: dpkg --print-architecture
+      register: arch
+
+    - name: Get Ubuntu codename
+      ansible.builtin.command:
+        cmd: bash -c '. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}"'
+      register: codename
+
+    - name: Add docker repository
+      ansible.builtin.apt_repository:
+        repo: "deb [arch={{ arch.stdout }} signed-by={{ DOCKER_KEY_PATH }}] {{ DOCKER_REGISTRY_URL }} {{ codename.stdout }} stable"
+        state: present
+
+    - name: Install containerd
+      ansible.builtin.apt:
+        name: containerd.io
+        state: latest
+        update_cache: true
+    
+    - name: Create containerd directory
+      ansible.builtin.file:
+        path: /etc/containerd
+        state: directory
+        mode: "0755"
+
+    - name: Set containerd configure
+      ansible.builtin.shell: |
+        containerd config default | tee /etc/containerd/config.toml
+        sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
+
+    - name: Enable and restart containerd
+      ansible.builtin.systemd_service:
+        name: containerd
+        enabled: true
+        state: restarted

@@ -1,0 +1,11 @@
+---
+
+##### Docker #####
+DOCKER_KEY_URL: "https://download.docker.com/linux/ubuntu/gpg"
+DOCKER_KEY_PATH: "/etc/apt/keyrings/docker.asc"
+DOCKER_REGISTRY_URL: "https://download.docker.com/linux/ubuntu"
+
+##### Kubernetes #####
+KUBERNETES_KEY_URL: "https://pkgs.k8s.io/core:/stable:/v1.33/deb/Release.key"
+KUBERNETES_KEY_PATH: "/etc/apt/keyrings/kubernetes-apt-keyring.gpg"
+KUBERNETES_REGISTRY_URL: "https://pkgs.k8s.io/core:/stable:/v1.33/deb/"

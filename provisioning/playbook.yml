@@ -1,0 +1,22 @@
+---
+
+- name: "1. swap off"
+  ansible.builtin.import_playbook: ./1-swap-off-playbook.yml
+
+- name: "2. install containerd"
+  ansible.builtin.import_playbook: ./2-install-containerd-playbook.yml
+
+- name: "3. install kube"
+  ansible.builtin.import_playbook: ./3-install-kube-playbook.yml
+
+- name: "4. init cluster"
+  ansible.builtin.import_playbook: ./4-init-cluster-playbook.yml
+
+- name: "5. install cni"
+  ansible.builtin.import_playbook: ./5-install-cni-playbook.yml
+
+- name: "6. join master nodes"
+  ansible.builtin.import_playbook: ./6-join-master-nodes-playbook.yml
+
+- name: "7. join worker nodes"
+  ansible.builtin.import_playbook: ./7-join-worker-nodes-playbook.yml

@@ -1,0 +1,14 @@
+---
+
+- name: Install CNI
+  hosts: primary_masters
+  become: true
+  tasks:
+    - name: Download Calico manifest
+      ansible.builtin.get_url:
+        url: "{{ CALICO_MANIFESTS_URL }}"
+        dest: "{{ CALICO_MANIFESTS_PATH }}"
+
+    - name: Apply Calico manifest
+      ansible.builtin.command:
+        cmd: kubectl apply -f {{ CALICO_MANIFESTS_PATH }}

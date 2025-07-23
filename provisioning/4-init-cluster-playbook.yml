@@ -1,0 +1,74 @@
+---
+
+- name: Initialize Kubernetes cluster
+  hosts: primary_masters
+  become: true
+  vars:
+    prefix: "{{ inventory_hostname.split('_')[0] }}"
+  tasks:
+    - name: Get primary IP of the interface
+      ansible.builtin.shell: 
+        cmd: ip -4 -o addr show | awk '$4 ~ /^10\.0\./ {print $4}' | cut -d/ -f1
+      register: master_ip
+
+    - name: Initialize the Kubernetes cluster
+      ansible.builtin.command:
+        cmd: kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address={{ master_ip.stdout }} --cri-socket=unix:///run/containerd/containerd.sock
+      register: kubeadm_init_output
+      ignore_errors: true
+
+    - name: Create .kube directory
+      ansible.builtin.file:
+        path: "{{ ansible_env.HOME }}/.kube"
+        state: directory
+        mode: "0755"
+
+    - name: Copy admin.conf to user's kube config
+      ansible.builtin.copy:
+        src: /etc/kubernetes/admin.conf
+        dest: "{{ ansible_env.HOME }}/.kube/config"
+        remote_src: true
+        mode: "0644"
+      when: kubeadm_init_output.rc == 0
+
+    - name: Generate join command
+      ansible.builtin.command:
+        cmd: kubeadm token create --print-join-command
+      register: join_command
+      when: kubeadm_init_output.rc == 0
+
+    - name: Get certificate key
+      ansible.builtin.command:
+        cmd: kubeadm init phase upload-certs --upload-certs
+      register: cert_key
+      when:  kubeadm_init_output.rc == 0
+
+    - name: Copy join command to masters
+      ansible.builtin.copy:
+        content: "{{ join_command.stdout }} --control-plane --certificate-key {{ cert_key.stdout_lines[-1] }} --cri-socket=unix:///run/containerd/containerd.sock"
+        dest: "{{ JOIN_COMMAND_PATH }}"
+      delegate_to: "{{ item }}"
+      loop: "{{ groups['masters'] | difference(groups['primary_masters']) | select('match', '^' + prefix) | list }}"
+      loop_control:
+        label: "{{ item }}"
+      run_once: true
+      when: 
+        - kubeadm_init_output.rc == 0
+        - cert_key.stdout_lines is defined
+        - cert_key.stdout_lines | length > 0
+
+    - name: Copy join command to workers
+      ansible.builtin.copy:
+        content: "{{ join_command.stdout }} --cri-socket=unix:///run/containerd/containerd.sock"
+        dest: "{{ JOIN_COMMAND_PATH }}"
+      delegate_to: "{{ item }}"
+      loop: "{{ groups['workers'] | select('match', '^' + prefix) | list }}"
+      loop_control:
+        label: "{{ item }}"
+      run_once: true
+      when: kubeadm_init_output.rc == 0
+
+    - name: Output join command to console
+      debug:
+        msg: "{{ join_command.stdout }}"
+      when: kubeadm_init_output.rc == 0

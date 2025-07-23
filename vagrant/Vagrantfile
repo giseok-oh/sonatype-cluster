@@ -1,68 +1,81 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
-# Virtual Machines
-VM_LIST = {
-  "zone_a" => {
-    :ip => "10.10.0.10",
-    :cpus => 6,
-    :memory => 6_144,
-    :disksize => "150GB"
-  },
-  "zone_b" => {
-    :ip => "10.20.0.10",
-    :cpus => 8,
-    :memory => 18_432,
-    :disksize => "200GB"
-  },
-  "zone_c" => {
-    :ip => "172.16.0.10",
-    :cpus => 6,
-    :memory => 6_144,
-    :disksize => "150GB"
-  },
-}
+require_relative "./zones"
 
 Vagrant.configure("2") do |config|
-  # Get Virtual Machine names
-  vm_names = VM_LIST.keys
+  role_nodes = Hash.new { |h, k| h[k] = [] }
 
-  # Get IP list
-  ips = VM_LIST.map { |_, config| config[:ip] }
+  ZONES.each do |zone, zone_cfg|
+    vlan = zone_cfg[:vlan]
+    gateway = zone_cfg[:gateway]
 
-  # Define groups
-  group_hash = vm_names.each_with_object({}) do |hostname, hash|
-    hash["group_#{hostname}"] = [hostname]
-  end
-  group_hash["all:children"] = vm_names
+    zone_cfg[:vms].each do |role, opts|
+      (1..opts[:amount]).each do |i|
+        hostname = "#{role}#{i}"
 
-  # Define Virtual Machines
-  VM_LIST.each do |hostname, opts|
-    config.vm.define hostname do |node|
-      # Default box disk size: 64GB
-      node.vm.box = "bento/rockylinux-8.10"
-      node.vm.hostname = hostname
-      node.vm.network :private_network, ip: opts[:ip]
-      node.vm.disk :disk, size: opts[:disksize], primary: true
-      node.vm.synced_folder '.', '/vagrant', disabled: true
+        role_nodes[role] << hostname
 
-      node.vm.provider "virtualbox" do |vbox|
-        vbox.gui = false
-        vbox.cpus = opts[:cpus]
-        vbox.memory = opts[:memory]
+        config.vm.define hostname do |node|
+          node.vm.box = "local/ubuntu-22.04.5"
+          node.vm.hostname = hostname.gsub("_", "-")
+          node.vm.disk :disk, size: opts[:disksize], primary: true
+          node.vm.synced_folder '.', '/vagrant', disabled: true
+
+          node.ssh.username = ""
+          node.ssh.password = ""
+
+          # Networks
+          node.vm.network :public_network,
+            :dev => vlan,
+            :mode => "bridge",
+            :type => "bridge",
+            :ip => opts[:ips][i - 1],
+            :subnet => "255.255.255.0",
+            :gateway => gateway
+
+          # Provider
+          node.vm.provider :libvirt do |libvirt|
+            libvirt.cpus = opts[:cpus]
+            libvirt.memory = opts[:memory] * 1_024
+          end
+        end
       end
     end
   end
 
-  # Install prerequisites
-  config.vm.provision "shell", path: "../provisioning/shell/prerequisites.sh"
-  
-  # Run playbook
-  config.vm.provision "ansible" do |ansible|
-    ansible.playbook = "../provisioning/playbooks/playbook.yml"
-    ansible.groups = group_hash
-    ansible.extra_vars = {
-      ansible_python_interpreter: "/usr/bin/python3"
+  openvpn = role_nodes
+    .select { |k, _| k.include?("openvpn") }
+    .values
+    .flatten
+
+  masters = role_nodes
+    .select { |k, _| k.include?("master") }
+    .values
+    .flatten
+
+  workers = role_nodes
+    .select { |k, _| k.include?("worker") }
+    .values
+    .flatten
+
+  primary_master_nodes = role_nodes
+    .select { |k, _| k.include?("master") }
+    .values
+    .map { |nodes| nodes.sort.first }
+
+  nodes = (masters + workers).uniq
+
+  config.vm.provision "ansible", type: "ansible" do |ansible|
+    ansible.playbook = "../provisioning/playbook.yml"
+    ansible.groups = {
+      "openvpn" => openvpn,
+      "primary_masters" => primary_master_nodes,
+      "masters" => masters,
+      "workers" => workers,
+      "nodes" => nodes
     }
-    ansible.compatibility_mode = "2.0"
+    ansible.extra_vars = {
+      "primary_master" => primary_master_nodes
+    }
   end
 end

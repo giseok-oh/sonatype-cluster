@@ -1,0 +1,8 @@
+---
+
+##### Paths #####
+JOIN_COMMAND_PATH: /tmp/join_command.sh
+
+##### Calico #####
+CALICO_MANIFESTS_URL: "https://raw.githubusercontent.com/projectcalico/calico/v3.30.2/manifests/calico.yaml"
+CALICO_MANIFESTS_PATH: "/usr/local/bin/calico.yaml"

@@ -1,0 +1,68 @@
+---
+
+- name: Install kubeadm, kubectl and kubelet
+  hosts: nodes
+  become: true
+  tasks:
+    - name: Check IP forwarding settings
+      ansible.builtin.command:  
+        cmd: cat /proc/sys/net/ipv4/ip_forward
+      register: ip_forward
+
+    - name: Enable IP forwarding
+      ansible.builtin.shell: |
+        sed -i 's/^#\?net.ipv4.ip_forward=.*/net.ipv4.ip_forward=1/' /etc/sysctl.conf
+        sysctl -p
+      when: ip_forward.stdout | int == 0
+
+    - name: Install prerequisites
+      ansible.builtin.apt:
+        name: gpg
+
+    - name: Check /etc/apt/keyrings exists
+      ansible.builtin.stat:
+        path: /etc/apt/keyrings
+      register: keyrings_dir
+
+    - name: Create directory for apt keyrings if it doesn't exist
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: "0755"
+      when: not keyrings_dir.stat.exists
+
+    - name: Download GPG Key
+      ansible.builtin.get_url:
+        url: "{{ KUBERNETES_KEY_URL }}"
+        dest: "/tmp/kubernetes-apt-keyring.key"
+        mode: "0755"
+
+    - name: Convert Kubernetes GPG key to binary format
+      ansible.builtin.command:
+        cmd: "gpg --dearmor -o {{ KUBERNETES_KEY_PATH }} /tmp/kubernetes-apt-keyring.key"
+      args:
+        creates: "{{ KUBERNETES_KEY_PATH }}"
+    
+    - name: Add Kubernetes repository
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by={{ KUBERNETES_KEY_PATH }}] {{ KUBERNETES_REGISTRY_URL }} /"
+        state: present
+
+    - name: Install kubeadm, kubectl and kubelet
+      ansible.builtin.apt:
+        name:
+          - kubeadm
+          - kubectl 
+          - kubelet
+        state: present
+        update_cache: true
+
+    - name: Hold kubeadm, kubectl and kubelet
+      ansible.builtin.command:
+        cmd: apt-mark hold kubelet kubeadm kubectl
+
+    - name: Enable and start kubelet service
+      ansible.builtin.systemd_service:
+        name: kubelet
+        enabled: true
+        state: started
