@@ -12,11 +12,10 @@
 - name: Generate Kustomize template fro ArgoCD
   ansible.builtin.template:
     src: argocd/kustomization.yaml.j2
-    dest: /tmp/argocd-kustomization.yaml
+    dest: /tmp/kustomization.yaml
 
 - name: Run kustomize build and apply
   ansible.builtin.shell: |
-    kustomize build /tmp | kubectl apply -f -
+    kubectl kustomize /tmp | kubectl apply -f -
   args:
     chdir: /tmp
-  delegate_to:

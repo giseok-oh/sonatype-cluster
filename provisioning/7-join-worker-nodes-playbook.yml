@@ -8,14 +8,21 @@
       ansible.builtin.wait_for:
         path: /tmp/join_command.sh
         state: present
-        timeout: 120
+        timeout: 300
 
     - name: Check /tmp/join_command.sh exists
       ansible.builtin.stat:
         path: /tmp/join_command.sh
       register: join_command_script
 
+    - name: Check if node already joined
+      ansible.builtin.stat:
+        path: /etc/kubernetes/kubelet.conf
+      register: kubelet_conf
+
     - name: Join the node to the cluster
       ansible.builtin.command:
         cmd: "bash /tmp/join_command.sh"
-      when: join_command_script.stat.exists
+      when: 
+        - join_command_script.stat.exists
+        - not kubelet_conf.stat.exists

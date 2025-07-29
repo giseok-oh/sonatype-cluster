@@ -6,6 +6,20 @@
   vars:
     prefix: "{{ inventory_hostname.split('_')[0] }}"
   tasks:
+    - name: Install dependencies for master nodes
+      ansible.builtin.apt:
+        name: python3-pip
+        state: present
+        update_cache: yes
+      
+    - name: Install Kubernetes Python client and dependencies
+      ansible.builtin.pip:
+        name:
+          - kubernetes>=24.2.0
+          - PyYAML>=3.11
+          - jsonpatch
+        executable: pip3
+
     - name: Get primary IP of the interface
       ansible.builtin.shell: 
         cmd: ip -4 -o addr show | awk '$4 ~ /^10\.0\./ {print $4}' | cut -d/ -f1
