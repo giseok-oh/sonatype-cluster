@@ -1,0 +1,22 @@
+---
+
+- name: Create ArgoCD namespace
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ argocd_namespace }}"
+
+- name: Generate Kustomize template fro ArgoCD
+  ansible.builtin.template:
+    src: argocd/kustomization.yaml.j2
+    dest: /tmp/argocd-kustomization.yaml
+
+- name: Run kustomize build and apply
+  ansible.builtin.shell: |
+    kustomize build /tmp | kubectl apply -f -
+  args:
+    chdir: /tmp
+  delegate_to:

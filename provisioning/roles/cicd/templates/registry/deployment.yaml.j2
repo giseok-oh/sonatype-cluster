@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ registry_name }}
+  namespace: {{ registry_namespace }}
+  labels:
+    app: {{ registry_label }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ registry_label }}
+  template:
+    metadata:
+      labels:
+        app: {{ registry_label }}
+    spec:
+      containers:
+        - name: {{ registry_name }}
+          image: {{ registry_image }}
+          ports:
+            - containerPort: 5000
+      volumeMounts:
+        - name: registry-storage
+          mountPath: /var/lib/registry
+      volumes:
+        - name: registry-storage
+          emptyDir: {}

@@ -20,3 +20,9 @@
 
 - name: "7. join worker nodes"
   ansible.builtin.import_playbook: ./7-join-worker-nodes-playbook.yml
+
+- hosts: masters
+  become: true
+  roles:
+    - role: "./roles/cicd"
+      when: inventory_hostname == "cicd_master1"

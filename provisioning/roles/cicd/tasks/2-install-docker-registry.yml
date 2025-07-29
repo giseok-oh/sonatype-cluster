@@ -1,0 +1,20 @@
+---
+
+- name: Create Registry namespace
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ registry_name }}"
+
+- name: Deploy Registry Deployment from template
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('template', 'registry/deployment.yaml.j2') | from_yaml }}"
+
+- name: Deploy Registry Service from template
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('template', 'registry/service.yaml.j2') | from_yaml }}"

@@ -1,0 +1,10 @@
+---
+
+- name: Install Jenkins
+  ansible.builtin.import_tasks: ./1-install-jenkins.yml
+
+- name: Install Registry
+  ansible.builtin.import_tasks: ./2-install-docker-registry.yml
+
+- name: Install ArgoCD
+  ansible.builtin.import_tasks: ./3-install-argocd.yml

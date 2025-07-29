@@ -1,0 +1,16 @@
+---
+
+##### Jenkins #####
+jenkins_name: jenkins
+jenkins_namespace: jenkins
+jenkins_label: jenkins
+jenkins_image: jenkins/jenkins:lts
+
+##### Docker Registry #####
+registry_name: registry
+registry_namespace: registry
+registry_label: registry
+registry_image: registry:2
+
+##### ArgoCD #####
+argocd_namespace: argocd
