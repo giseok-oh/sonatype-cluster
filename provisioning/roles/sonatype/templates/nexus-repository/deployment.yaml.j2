@@ -14,15 +14,15 @@ spec:
     metadata:
       labels:
         app: {{ nexus_label }}
-  spec:
-    containers:
-      - name: {{ nexus_name }}
-        image: {{ nexus_image }}
-        ports:
-          - containerPort: 8081
-        volumeMounts:
-          - name: nexus-data
-            mountPath: /nexus-data
-        volumes:
+    spec:
+      containers:
+        - name: {{ nexus_name }}
+          image: {{ nexus_image }}
+          ports:
+            - containerPort: 8081
+      volumeMounts:
         - name: nexus-data
-          emptyDir: {}
+          mountPath: /nexus-data
+      volumes:
+      - name: nexus-data
+        emptyDir: {}

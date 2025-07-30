@@ -7,15 +7,15 @@ ZONES = {
         :amount => 1,
         :ips => ["10.0.10.10"],
         :cpus => 2,
-        :memory => 2,
+        :memory => 4,
         :disksize => "20GB"
       },
       "cicd_worker" => {
         :amount => 2,
         :ips => ["10.0.10.20", "10.0.10.21"],
-        :cpus => 2,
-        :memory => 4,
-        :disksize => "40GB"
+        :cpus => 4,
+        :memory => 8,
+        :disksize => "50GB"
       }
     }
   },
@@ -27,15 +27,15 @@ ZONES = {
         :amount => 1,
         :ips => ["10.0.20.10"],
         :cpus => 2,
-        :memory => 2,
-        :disksize => "10GB"
+        :memory => 4,
+        :disksize => "20GB"
       },
       "sonatype_worker" => {
         :amount => 2,
-        :ips => ["10.0.20.20", "10.0.10.21"],
-        :cpus => 2,
-        :memory => 4,
-        :disksize => "40GB"
+        :ips => ["10.0.20.20", "10.0.20.21"],
+        :cpus => 4,
+        :memory => 8,
+        :disksize => "50GB"
       },
       "postgre_master" => {
         :amount => 1,
@@ -47,9 +47,9 @@ ZONES = {
       "postgre_worker" => {
         :amount => 2,
         :ips => ["10.0.20.40", "10.0.20.41"],
-        :cpus => 2,
-        :memory => 4,
-        :disksize => "40GB"
+        :cpus => 4,
+        :memory => 8,
+        :disksize => "50GB"
       }
     }
   },
@@ -68,15 +68,15 @@ ZONES = {
         :amount => 2,
         :ips => ["10.0.30.20", "10.0.30.21"],
         :cpus => 2,
-        :memory => 2,
-        :disksize => "40GB"
+        :memory => 4,
+        :disksize => "50GB"
       },
       "openvpn_server" => {
         :amount => 1,
         :ips => ["10.0.30.100"],
         :cpus => 2,
         :memory => 2,
-        :disksize => "20GB"
+        :disksize => "50GB"
       }
     }
   }

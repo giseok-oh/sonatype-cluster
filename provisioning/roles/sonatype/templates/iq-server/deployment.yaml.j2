@@ -22,10 +22,10 @@ spec:
             - containerPort: 8070
           env:
             - name: JAVA_OPTS
-              value "{{ iq_java_opts | default('-Xms512m -Xmx2g')}}"
-          volumeMounts:
-            - name: iq-data
-              mountPath: /sonatype-work
-          volumes:
-            - name: nexus-data
-              emptyDir: {}
+              value: "{{ iq_java_opts | default('-Xms512m -Xmx2g')}}"
+      volumeMounts:
+        - name: iq-data
+          mountPath: /sonatype-work
+      volumes:
+        - name: iq-data
+          emptyDir: {}

@@ -2,7 +2,7 @@
 
 ##### IQ Server #####
 iqserver_name: iqserver
-iqserver_namesapce: iqserver
+iqserver_namespace: iqserver
 iqserver_label: iqserver
 iqserver_image: sonatype/nexus-iq-server:1.193.0
 

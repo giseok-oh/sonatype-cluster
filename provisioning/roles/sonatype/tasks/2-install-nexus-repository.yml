@@ -7,7 +7,7 @@
       apiVersion: v1
       kind: Namespace
       metadata:
-        name: "{{ jenkins_name }}"
+        name: "{{ nexus_name }}"
 
 - name: Deploy Nexus Repository Deployment from template
   kubernetes.core.k8s:
