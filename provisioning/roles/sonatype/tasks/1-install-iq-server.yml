@@ -1,0 +1,20 @@
+---
+
+- name: Create IQ Server namespace
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ iqserver_name }}"
+
+- name: Deploy IQ Server Deployment from template
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('template', 'iq-server/deployment.yaml.j2') | from_yaml }}"
+
+- name: Deploy IQ Server Service from template
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('template', 'iq-server/service.yaml.j2') | from_yaml }}"

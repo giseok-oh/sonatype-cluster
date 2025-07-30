@@ -1,0 +1,13 @@
+---
+
+##### IQ Server #####
+iqserver_name: iqserver
+iqserver_namesapce: iqserver
+iqserver_label: iqserver
+iqserver_image: sonatype/nexus-iq-server:1.193.0
+
+##### Nexus Repository #####
+nexus_name: nexus
+nexus_namespace: nexus
+nexus_label: nexus
+nexus_image: sonatype/nexus:pro

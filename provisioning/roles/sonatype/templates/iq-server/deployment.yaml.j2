@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ iqserver_name }}
+  namespace: {{ iqserver_namespace }}
+  labels:
+    app: {{ iqserver_label }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ iqserver_label }}
+  template:
+    metadata:
+      labels:
+        app: {{ iqserver_label }}
+    spec:
+      containers:
+        - name: {{ iqserver_name }}
+          image: {{ iqserver_image }}
+          ports:
+            - containerPort: 8070
+          env:
+            - name: JAVA_OPTS
+              value "{{ iq_java_opts | default('-Xms512m -Xmx2g')}}"
+          volumeMounts:
+            - name: iq-data
+              mountPath: /sonatype-work
+          volumes:
+            - name: nexus-data
+              emptyDir: {}

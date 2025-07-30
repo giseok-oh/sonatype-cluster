@@ -1,0 +1,20 @@
+---
+
+- name: Create Nexus Repository namespace
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: "{{ jenkins_name }}"
+
+- name: Deploy Nexus Repository Deployment from template
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('template', 'nexus-repository/deployment.yaml.j2') | from_yaml }}"
+
+- name: Deploy Nexus Repository Service from template
+  kubernetes.core.k8s:
+    state: present
+    definition: "{{ lookup('template', 'nexus-repository/service.yaml.j2') | from_yaml }}"

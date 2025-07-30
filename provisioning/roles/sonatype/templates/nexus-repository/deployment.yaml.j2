@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ nexus_name }}
+  namespace: {{ nexus_namespace }}
+  labels:
+    app: {{ nexus_label }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ nexus_label }}
+  template:
+    metadata:
+      labels:
+        app: {{ nexus_label }}
+  spec:
+    containers:
+      - name: {{ nexus_name }}
+        image: {{ nexus_image }}
+        ports:
+          - containerPort: 8081
+        volumeMounts:
+          - name: nexus-data
+            mountPath: /nexus-data
+        volumes:
+        - name: nexus-data
+          emptyDir: {}

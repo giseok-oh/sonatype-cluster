@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ iqserver_name }}
+  namespace: {{ iqserver_namespace }}
+spec:
+  selector:
+    app: {{ iqserver_label }}
+  ports:
+    - name: http
+      port: 8070
+      targetPort: 8070
+    - name: api
+      port: 8071
+      targetPort: 8071

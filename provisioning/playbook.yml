@@ -26,3 +26,9 @@
   roles:
     - role: "./roles/cicd"
       when: inventory_hostname == "cicd_master1"
+
+- hosts: masters
+  become: true
+  roles:
+    - role: "./roles/sonatype"
+      when: inventory_hostname == "sonatype_master1"

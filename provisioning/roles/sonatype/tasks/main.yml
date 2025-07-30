@@ -1,0 +1,7 @@
+---
+
+- name: Install IQ Server
+  ansible.builtin.import_tasks: ./1-install-iq-server.yml
+
+- name: Install Nexus Repository
+  ansible.builtin.import_tasks: ./2-install-nexus-repository.yml
